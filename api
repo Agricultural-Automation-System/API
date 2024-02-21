@@ -1,0 +1,44 @@
+from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'your_database_connection_string_here'
+db = SQLAlchemy(app)
+
+# Define your database models
+class User(db.Model):
+    __tablename__ = 'Users'
+    userID = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50))
+    password = db.Column(db.String(50))
+    email = db.Column(db.String(100))
+
+class Farm(db.Model):
+    __tablename__ = 'Farms'
+    farmID = db.Column(db.Integer, primary_key=True)
+    ownerID = db.Column(db.Integer, db.ForeignKey('Users.userID'))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    size = db.Column(db.Float)
+
+class Crop(db.Model):
+    __tablename__ = 'Crops'
+    cropID = db.Column(db.Integer, primary_key=True)
+    farmID = db.Column(db.Integer, db.ForeignKey('Farms.farmID'))
+    cropType = db.Column(db.String(50))
+    plantingDate = db.Column(db.Date)
+    harvestingDate = db.Column(db.Date)
+
+# Define other models as needed (Sensors, SensorReadings, Fertilisers, etc.)
+
+# Define API routes
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    users_list = [{'userID': user.userID, 'username': user.username, 'email': user.email} for user in users]
+    return jsonify(users_list)
+
+# Define more routes as needed to interact with other database tables
+
+if __name__ == '__main__':
+    app.run(debug=True)
